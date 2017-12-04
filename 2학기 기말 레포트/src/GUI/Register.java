@@ -3,12 +3,17 @@ package GUI;
 import java.awt.BorderLayout;
 import java.awt.Checkbox;
 import java.awt.CheckboxGroup;
+import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,6 +25,19 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 class MainRegister extends JFrame{
+	public static void main(String[] args) {
+		// 예외처리
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					MainRegister frame = new MainRegister();
+					frame.setVisible(true);
+				}catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
    JPanel mainjp = new JPanel();
    
    JPanel noregjp = new JPanel();
@@ -33,11 +51,11 @@ class MainRegister extends JFrame{
    JPanel sublistjp = new JPanel();
    
    
-   JTable table = new JTable(); 
-    JScrollPane pane = new JScrollPane(table);
-    Object[] row = new Object[5];
-    Object[] columns = {"학번","이름","학과","학년", "성별"};
-    DefaultTableModel model = new DefaultTableModel();
+   private JTable table = new JTable(); 
+   JScrollPane pane = new JScrollPane(table);
+   Object[] row = new Object[5];
+   Object[] columns = {"학번","이름","학과","학년", "성별"};
+   DefaultTableModel model = new DefaultTableModel();
    
     
     
@@ -76,6 +94,8 @@ class MainRegister extends JFrame{
    
    Data_Input in = new Data_Input();
    Data_Delete del = new Data_Delete();
+   Data_Load load = new Data_Load();
+   
    MainPage ma = new MainPage();
    
    
@@ -135,6 +155,7 @@ class MainRegister extends JFrame{
       reg.addActionListener(in);
       delete.addActionListener(del);
       select.addActionListener(ma);
+      save.addActionListener(load);
    }
    
    class Data_Input implements ActionListener{
@@ -143,9 +164,6 @@ class MainRegister extends JFrame{
             String com1= num_1.getText();
             String com2 = name_1.getText();
             String com3 = major_1.getText();
-
-
-            
                row[0] = num_1.getText();
                row[1] = name_1.getText();
                row[2] = major_1.getText();
@@ -173,13 +191,13 @@ class MainRegister extends JFrame{
                }
                
                if(com1.isEmpty()) {
-                   JOptionPane.showMessageDialog(null, "데이터를 입렷하시오.", "오류 ", 
+                   JOptionPane.showMessageDialog(null, "데이터를 입력하시오.", "오류 ", 
                     JOptionPane.ERROR_MESSAGE);
                }else if(com2.isEmpty()) {
-            	  JOptionPane.showMessageDialog(null, "데이터를 입렷하시오.", "오류 ", 
+            	  JOptionPane.showMessageDialog(null, "데이터를 입력하시오.", "오류 ", 
                     JOptionPane.ERROR_MESSAGE);
                }else if(com3.isEmpty()) {
-             	  JOptionPane.showMessageDialog(null, "데이터를 입렷하시오.", "오류 ", 
+             	  JOptionPane.showMessageDialog(null, "데이터를 입력하시오.", "오류 ", 
                           JOptionPane.ERROR_MESSAGE);
                      }else model.addRow(row);
          }
@@ -189,39 +207,64 @@ class MainRegister extends JFrame{
       public void actionPerformed(ActionEvent e) {
          int i = table.getSelectedRow();
          if(i >= 0){
-            JOptionPane.showConfirmDialog(null, "데이터를 정말"
-               + "삭제하시겠습니까??","경고메세지",
-               JOptionPane.YES_NO_OPTION);
-               
-            model.removeRow(i);
-            
+            if(i == JOptionPane.showConfirmDialog(null, "데이터를 정말"
+                    + "삭제하시겠습니까??","경고메세지",
+                    JOptionPane.YES_NO_OPTION)) {
+            	model.removeRow(i);
+            }else {
+            	 
             }
+         } 
       }
-      
    }
-   
-}
 
+	class Data_Load implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			JFileChooser fileChooser = new JFileChooser();
+			fileChooser.showSaveDialog(MainRegister.this);
+			File file = fileChooser.getSelectedFile();
+			
+			BufferedWriter bw = null;
+			try {
+	               FileWriter excel = new FileWriter(file.getAbsoluteFile());
+	               
+	               for(int i=0; i<table.getColumnCount(); i++) {
+	                  excel.write(table.getColumnName(i)+"\t");
+	               }
+	               
+	               String[][] getData = new String[table.getRowCount()][table.getColumnCount()];
+	               for(int i=0; i<table.getRowCount(); i++) {
+	                  excel.write("\n");
+	                  for(int j=0; j<table.getColumnCount(); j++){
+	                     excel.write((String) table.getValueAt(i, j) + "\t");
+	                  }
+	               }
+	               excel.write("");
+	               excel.close();
+	            }
+	            catch(Exception e1){
+	               System.out.println(e1);
+	            }
+		}
+	}
 
-class MainPage implements ActionListener{
-	public void actionPerformed(ActionEvent e) {
+	class MainPage implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
 			e.getSource();
 			SelectMenu reg = new SelectMenu();
-		
-	}
+		}
 	
+	}
 }
 
 
-public class Register{
-   JFrame f;  
-      Register(){  
-          f=new JFrame();   
-         
+	public class Register{
+		JFrame f;  
+		Register(){  
+         f=new JFrame();   
       }  
    public static void main(String[] args) {
-      
+	  
       new MainRegister();
    }
-   
 }
